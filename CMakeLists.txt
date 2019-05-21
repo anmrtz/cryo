@@ -11,7 +11,7 @@ find_library(wiringPi REQUIRED)
 
 include_directories(include)
 
-add_executable(cryo cryo.cpp)
+add_executable(cryo cryo.cpp ncurses_ui.cpp)
 
 target_link_libraries(cryo wiringPi)
 
