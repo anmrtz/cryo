@@ -6,12 +6,12 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -lpthread")
 # Specify project and identify languages used.
 project(cryo LANGUAGES CXX)
 
-#find_package(Boost REQUIRED)
+#find_package(Boost REQUIRED COMPONENTS signals)
 find_library(wiringPi REQUIRED)
+find_library(ncurses REQUIRED)
 
 include_directories(include)
 
 add_executable(cryo cryo.cpp ncurses_ui.cpp)
 
-target_link_libraries(cryo wiringPi)
-
+target_link_libraries(cryo wiringPi ncurses)# Boost::signals)

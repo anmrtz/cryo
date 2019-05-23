@@ -1,5 +1,7 @@
 #pragma once
 
+#include "defs.hpp"
+
 // pure virtual class used for any cryo control user interfaces (ncurses, webserver..)
 class control_ui
 {
