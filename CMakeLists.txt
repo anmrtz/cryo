@@ -12,6 +12,6 @@ find_library(ncurses REQUIRED)
 
 include_directories(include)
 
-add_executable(cryo cryo.cpp ncurses_ui.cpp)
+add_executable(cryo cryo.cpp ncurses_ui.cpp DS18B20.cpp)
 
 target_link_libraries(cryo wiringPi ncurses)# Boost::signals)
