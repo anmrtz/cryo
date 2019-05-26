@@ -9,7 +9,7 @@
 #include "defs.hpp"
 #include "ncurses_ui.hpp"
 
-std::atomic<bool> terminate_flag{false}; // TODO: remove this
+std::atomic_bool terminate_flag{false}; // TODO: remove this
 
 // need to set SIGNAL handlers..
 void sig_handler(int s)
