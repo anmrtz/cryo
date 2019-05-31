@@ -41,7 +41,6 @@ temp_t DS18B20::read_temp()
         for (const auto & entry : w1_entries)
         {
             const auto entry_path{entry.path()};
-            std::cout << "Checking path: " << entry_path << '\n';
             std::string dir_name(entry_path.stem());
             if (dir_name.find("28-",0) == 0)
             {

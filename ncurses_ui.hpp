@@ -31,11 +31,11 @@ class ncurses_ui : public control_ui
 
     private:
 
-    temp_t temp_setting{30};
+    temp_t m_temp_setting{30};
+    std::map<std::string,temp_reading_t> m_sensor_states; // sensor_id, reading
+    std::map<std::string,timepoint_t> m_last_updates; // sensor_id, last update time
 
-    std::map<std::string,temp_reading_t> sensor_state_readings; // sensor_id, reading
-
-    std::mutex temp_lock;
+    std::mutex m_temp_lock;
 
     //std::weak_ptr<cryo_controller> cryo;
 };
