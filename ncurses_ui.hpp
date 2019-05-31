@@ -23,7 +23,7 @@ class ncurses_ui : public control_ui
     void console_loop(); // runs the console
 
     // updates the values displayed by the console
-    void update_sensor_reading(const sensor_temp_t &);
+    void update_sensor_reading(const sensor_state_t &);
     void update_temp_setting(const temp_reading_t &);
 
     // send user-specified temperature settings to the cryo controller
@@ -33,9 +33,9 @@ class ncurses_ui : public control_ui
 
     temp_t temp_setting{30};
 
-    std::map<std::string,temp_reading_t> sensor_temp_readings; // sensor_id, reading
+    std::map<std::string,temp_reading_t> sensor_state_readings; // sensor_id, reading
 
     std::mutex temp_lock;
 
-    //std::shared_ptr<cryo_controller> cryo;
+    //std::weak_ptr<cryo_controller> cryo;
 };

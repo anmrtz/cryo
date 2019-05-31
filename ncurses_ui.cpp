@@ -28,13 +28,13 @@ void ncurses_ui::console_loop()
     {
         unsigned Y_OFFSET{7};
 
-        if (sensor_temp_readings.empty())
+        if (sensor_state_readings.empty())
         {
             mvprintw(Y_OFFSET, X_OFFSET, "--- NO TEMPERATURE SENSORS DETECTED ---");
             refresh();
         }
         else
-            for (const auto & reading : sensor_temp_readings)
+            for (const auto & reading : sensor_state_readings)
             {
                 const auto sensor_id = reading.first;
                 const auto sensor_temp = reading.second.first;
