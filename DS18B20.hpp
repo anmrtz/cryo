@@ -15,7 +15,7 @@ class DS18B20 : public temp_sensor
 {
     public:
 
-    explicit DS18B20(const std::string & w1_devices_path = ONE_WIRE_DIRECTORY);
+    explicit DS18B20(const std::string & w1_devices_path);
     virtual ~DS18B20() = default;
 
     virtual temp_t read_temp() override;

@@ -12,7 +12,7 @@ temp_t DS18B20::parse_temp(const std::string & w1_output)
     if (temp_pos == std::string::npos)
         throw std::runtime_error("DS18B20::parse_temp error: \"t=\" substring not found\n");
 
-    const std::string temp_str = w1_output.substr(temp_pos);
+    const std::string temp_str = w1_output.substr(temp_pos+2);
     temp_t parsed_temp;
     try
     {
@@ -40,8 +40,10 @@ temp_t DS18B20::read_temp()
         const auto & w1_entries = fs::directory_iterator(m_device_path);
         for (const auto & entry : w1_entries)
         {
-            const std::string entry_path{entry.path()};
-            if (entry_path.find("28-",0) == 0)
+            const auto entry_path{entry.path()};
+            std::cout << "Checking path: " << entry_path << '\n';
+            std::string dir_name(entry_path.stem());
+            if (dir_name.find("28-",0) == 0)
             {
                 ds18b20_path = entry_path;
                 break;
@@ -56,11 +58,13 @@ temp_t DS18B20::read_temp()
 
     if (ds18b20_path.empty())
     {
+        // should throw exception or return std::optional to clearly denote that no temperature was read
         std::cerr << "No DS18B20 devices found on one-wire bus\n";
         return temp_t(0);
     }
 
-    std::fstream w1_file(ds18b20_path);
+    ds18b20_path += "/w1_slave";
+    std::ifstream w1_file(ds18b20_path);
     if (!w1_file.is_open())
         throw std::runtime_error("Could not open DS18B20 device: " + ds18b20_path + '\n');
 
