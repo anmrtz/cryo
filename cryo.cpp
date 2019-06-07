@@ -7,9 +7,7 @@
 
 #include <signal.h>
 
-#include "defs.hpp"
-#include "ncurses_ui.hpp"
-#include "DS18B20.hpp"
+#include "cryo.hpp"
 
 //#define LOG_OUTPUT // output cryo module logs directly to std::out (disables ncurses console)
 
@@ -32,13 +30,13 @@ int main(int argc, char ** argv)
     
     DS18B20 temp_sensor(ONE_WIRE_DIRECTORY);
     
-    ncurses_ui ui;
+    console_ui ui;
 
 #ifdef LOG_OUTPUT
     std::cout << "Starting log output...\n";
     auto last_reading = std::chrono::steady_clock::now();
 #else
-    auto console_thread = std::async(std::launch::async, &ncurses_ui::console_loop, std::ref(ui));
+    auto console_thread = std::async(std::launch::async, &console_ui::console_task, std::ref(ui));
 #endif
     while (!terminate_flag.load())
     {

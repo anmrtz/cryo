@@ -1,26 +1,19 @@
 #pragma once
 
+#include <map>
+#include <string>
+#include <mutex>
+
 #include "control_ui.hpp"
 
-#include <iostream>
-#include <chrono>
-#include <exception>
-#include <thread>
-#include <mutex>
-#include <map>
-
-//#include <boost/signals2.hpp>
-
-static constexpr std::chrono::milliseconds CONSOLE_UPDATE_INTERVAL{100};
-
-class ncurses_ui : public control_ui
+class console_ui : public control_ui
 {
     public:
 
-    ncurses_ui() = default;
-    virtual ~ncurses_ui() = default;
+    console_ui() = default;
+    virtual ~console_ui() = default;
 
-    void console_loop(); // runs the console
+    void console_task(); // runs the console
 
     // updates the values displayed by the console
     void update_sensor_reading(const sensor_state_t &);
