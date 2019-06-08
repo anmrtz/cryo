@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
     sigIntHandler.sa_flags = 0;
     sigaction(SIGINT, &sigIntHandler, nullptr);
 
-    std::shared_ptr<cryo_control> cryo = std::make_shared<cryo_control>(std::make_shared<mock_temp_sensor>(), std::make_shared<rpiPWM1>());
+    std::shared_ptr<cryo_control> cryo = std::make_shared<cryo_control>(std::make_shared<mock_temp_sensor>(), std::make_shared<pwm_control>());
     std::shared_ptr<console_ui> console = std::make_shared<console_ui>(cryo);
     cryo->register_ui_observer(console);
 

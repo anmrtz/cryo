@@ -2,8 +2,8 @@
 
 #include <atomic>
 #include <string>
-#include <cstring>
-#include <cstdlib>
+#include <iterator>
+#include <sstream>
 #include <iostream>
 #include <thread>
 
@@ -30,8 +30,8 @@ static inline void print_help()
     std::cout << "\nList of commands:\n\n"
         "on\t\t-> Turns GPIO PWM on\n"
         "off\t\t-> Turns GPIO PWM off\n"
-        "duty %%\t\t-> Sets GPIO PWM duty cycle to %% (e.x. duty 50)\n"
-        "temp #\t\t-> Sets target temperature in degrees Celsius (e.x. temp 6)\n"
+        "duty %\t\t-> Sets GPIO PWM duty cycle to % (e.x. duty 50)\n"
+        "temp #\t\t-> Sets target temperature to # degrees Celsius (e.x. temp 6)\n"
         "status\t\t-> Prints status\n"
         "help\t\t-> Prints help menu\n\n"
         "kill\t\t-> Turns off all PWM and kills the program\n"
@@ -88,58 +88,55 @@ void console_ui::console_task()
     print_status();
     print_help();
 
-    char line[128];
-    char token[128];
+    std::string line;
+    std::string token;
     duty_t set_duty;
     temp_t set_temp;
     while(true)
     {
         if (terminate_flag)
-            return;
+            break;
 
         std::cout << "\n**************************************"
                   "\nEnter command ('help' to view manual):\n";
-        auto err = scanf("%127[^\n]",line);
-        if (err != 1)
-        {
-            std::cout << "ERROR: Empty line recieved!\n";
+        std::getline(std::cin,line);
+        if (line.empty())
             continue;
-        }
-        line[127] = 0;
-        token[0] = 0;
-        if (sscanf(line,"%s",token) == EOF)
-        {
-            std::cout << "ERROR: line is only whitespace!\n";
-            continue;
-        }
-
-        int word_count = 0;
-        bool letter_found = false;
-        for (int i = 0; i < (int)strlen(line); i++)
-        {
-            if (line[i] == ' ')
-                letter_found = false;
-            else
-                if (!letter_found)
-                {
-                    letter_found = true;
-                    word_count++;
-                }
-        }
-
         std::cout << "\nLine recieved: " << line << "\n\n";
+        std::istringstream iss(line);
+        std::vector<std::string> tokens((std::istream_iterator<std::string>(iss)),std::istream_iterator<std::string>());
+        if (tokens.empty())
+            continue;
 
-        if (strcmp(token,"duty") == 0 && word_count == 2 && sscanf(line,"%*s%u",&set_duty) == 1)
+        if (tokens.at(0) == "duty" && tokens.size() == 2)
         {
+            try
+            {
+                set_duty = std::stoul(tokens.at(1));
+            }
+            catch (std::logic_error & e)
+            {
+                std::cout << "String to unsigned conversion error: " << e.what() << '\n';
+            }
+
             if (!valid_duty(set_duty))
                 continue;
-            std::cout << "Setting all cryo duty cycle to " << set_duty << "%%\n";
+            std::cout << "Setting all cryo duty cycle to " << set_duty << "%\n";
 
             // TODO
         }
 
-        else if (strcmp(token,"temp") == 0 && word_count == 2 && sscanf(line,"%*s%u",&set_temp) == 1)
+        else if (tokens.at(0) == "temp" && tokens.size() == 2)
         {
+            try
+            {
+                set_temp = std::stoul(tokens.at(1));
+            }
+            catch (std::logic_error & e)
+            {
+                std::cout << "String to unsigned conversion error: " << e.what() << '\n';
+            }
+
             if (!valid_temp(set_temp))
                 continue;
             std::cout << "Setting cryo target temperature to " << set_temp << " degrees Celsius\n";
@@ -147,37 +144,37 @@ void console_ui::console_task()
             // TODO
         }
 
-        else if (strcmp(token,"on") == 0 && word_count == 1)
+        else if (tokens.at(0) == "on" && tokens.size() == 1)
         {
             std::cout << "Turning on temperature control...\n";
 
             turn_on();
         }
 
-        else if (strcmp(token,"off") == 0 && word_count == 1)
+        else if (tokens.at(0) == "off" && tokens.size() == 1)
         {
             std::cout << "Turning off temperature control...\n";
 
             turn_off();
         }
 
-        else if (strcmp(token,"status") == 0 && word_count == 1)
+        else if (tokens.at(0) == "status" && tokens.size() == 1)
         {
             print_status();
         }
 
-        else if (strcmp(token, "help") == 0 && word_count == 1)
+        else if (tokens.at(0) == "help" && tokens.size() == 1)
         {
             print_help();
         }
 
-        else if (strcmp(token, "kill") == 0)
+        else if (tokens.at(0) == "kill" && tokens.size() == 1)
         {
             std::cout << "Deactivating all PWM and killing program...\n";
             
             turn_off();
 
-            return;
+            break;
         }
 
         else
@@ -188,4 +185,6 @@ void console_ui::console_task()
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
+
+    std::cout << "Console terminated\n";
 }
