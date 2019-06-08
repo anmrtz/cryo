@@ -24,7 +24,7 @@ class DS18B20 : public temp_sensor
 
     DS18B20() = default;
     
-    static uint16_t parse_temp(const std::string &);
+    static temp_t parse_temp(const std::string &);
 
     const std::string m_device_path;
 };
