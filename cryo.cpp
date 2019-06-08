@@ -29,8 +29,8 @@ int main(int argc, char ** argv)
     sigaction(SIGINT, &sigIntHandler, nullptr);
     
     DS18B20 temp_sensor(ONE_WIRE_DIRECTORY);
-    
-    console_ui ui;
+/*    
+    console_ui ui();
 
 #ifdef LOG_OUTPUT
     std::cout << "Starting log output...\n";
@@ -60,6 +60,6 @@ int main(int argc, char ** argv)
     console_thread.get();
 #endif
     std::cout << "cryo process terminated\n" << std::flush;
-
+*/
     return 0;
 }

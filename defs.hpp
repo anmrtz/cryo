@@ -10,3 +10,5 @@ using temp_reading_t = std::pair<temp_t,timepoint_t>; // temp, timestamp
 using sensor_state_t = std::pair<std::string,temp_reading_t>; // sensor_id, temp_reading
 
 using gpio_t = uint32_t;
+
+static_assert(std::is_pod<int>::value);

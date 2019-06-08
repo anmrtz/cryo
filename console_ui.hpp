@@ -10,7 +10,7 @@ class console_ui : public control_ui
 {
     public:
 
-    console_ui() = default;
+    explicit console_ui(const std::shared_ptr<cryo> &);
     virtual ~console_ui() = default;
 
     void console_task(); // runs the console
@@ -22,7 +22,9 @@ class console_ui : public control_ui
     // send user-specified temperature settings to the cryo controller
     void send_temp_setting_to_contoller();
 
-    private:
+    protected:
+
+    console_ui() = default;
 
     temp_t m_temp_setting{30};
     std::map<std::string,temp_reading_t> m_sensor_states; // sensor_id, reading
@@ -30,5 +32,4 @@ class console_ui : public control_ui
 
     std::mutex m_temp_lock;
 
-    //std::weak_ptr<cryo_controller> cryo;
 };
