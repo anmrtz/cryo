@@ -12,12 +12,12 @@
 
 class control_ui;
 
-class cryo
+class cryo_control
 {
     public:
 
-    cryo(const std::shared_ptr<temp_sensor> &, const std::shared_ptr<pwm_control> &);
-    ~cryo() = default;
+    cryo_control(const std::shared_ptr<temp_sensor> &, const std::shared_ptr<pwm_control> &);
+    ~cryo_control() = default;
 
     void register_ui_observer(const std::shared_ptr<control_ui> &);
 
@@ -32,7 +32,7 @@ class cryo
 
     private:
 
-    cryo() = default;
+    cryo_control() = default;
 
     temp_t m_stored_temp_reading{0};
 

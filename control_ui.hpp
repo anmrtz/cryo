@@ -1,16 +1,16 @@
 #pragma once
 
 #include "defs.hpp"
-#include "cryo.hpp"
+#include "cryo_control.hpp"
 
-class cryo;
+class cryo_control;
 
 // virtual class used for any cryo control user interfaces (ncurses, webserver..)
 class control_ui
 {
     public:
 
-    explicit control_ui(const std::shared_ptr<cryo> & cryo_controller);
+    explicit control_ui(const std::shared_ptr<cryo_control> & cryo_controller);
     virtual ~control_ui() = default;
 
     // add common functions as needed..
@@ -21,5 +21,5 @@ class control_ui
 
     control_ui() = default;
 
-    std::weak_ptr<cryo> m_cryo_controller;
+    std::weak_ptr<cryo_control> m_cryo_controller;
 };

@@ -27,7 +27,7 @@ int main(int argc, char ** argv)
     sigaction(SIGINT, &sigIntHandler, nullptr);
 
     std::shared_ptr<cryo_control> cryo = std::make_shared<cryo_control>(std::make_shared<mock_temp_sensor>(), std::make_shared<rpiPWM1>());
-    std::shared_ptr<control_ui> console = std::make_shared<console_ui>(cryo);
+    std::shared_ptr<console_ui> console = std::make_shared<console_ui>(cryo);
     cryo->register_ui_observer(console);
 
     auto console_thread = std::async(std::launch::async, &console_ui::console_task, std::ref(*console));

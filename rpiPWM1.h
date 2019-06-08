@@ -88,7 +88,7 @@
  *             please refrain from playing audio on the RPI while this code 
  *             is running.
  * *********************************************************************/
-class rpiPWM1 : pwm_control {
+class rpiPWM1 : public pwm_control {
 
 public:
   rpiPWM1();

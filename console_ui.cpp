@@ -9,6 +9,10 @@
 
 extern std::atomic_bool terminate_flag;
 
+console_ui::console_ui(const std::shared_ptr<cryo_control> & cryo_ptr) :
+    control_ui(cryo_ptr)
+{}
+
 void console_ui::update_sensor_reading(const sensor_state_t & state)
 {
     std::lock_guard<std::mutex> lock(m_temp_lock);
