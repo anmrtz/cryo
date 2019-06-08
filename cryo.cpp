@@ -19,6 +19,16 @@ void sig_handler(int s)
     terminate_flag = true;
 }
 
+void cryo::update_temp_setting(const temp_t & temp)
+{
+    m_set_temp = temp;
+}
+
+void cryo::update_duty_cycle(const duty_t & duty)
+{
+    m_set_duty = duty;
+}
+
 // create and detach control interface thread(s) and start main control loop
 int main(int argc, char ** argv)
 {

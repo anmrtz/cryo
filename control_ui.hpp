@@ -5,16 +5,17 @@
 
 class cryo;
 
-// pure virtual class used for any cryo control user interfaces (ncurses, webserver..)
+// virtual class used for any cryo control user interfaces (ncurses, webserver..)
 class control_ui
 {
     public:
 
-    explicit control_ui(const std::shared_ptr<cryo> & cryo_controller) :
-        m_cryo_controller(cryo_controller) {}
+    explicit control_ui(const std::shared_ptr<cryo> & cryo_controller);
     virtual ~control_ui() = default;
 
     // add common functions as needed..
+    virtual void send_temp_setting(const temp_t & temp) const;
+    virtual void send_duty_cycle(const duty_t & duty) const;
 
     protected:
 
