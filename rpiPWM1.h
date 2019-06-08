@@ -8,6 +8,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
+#include "pwm_control.hpp"
+
 /***********************************************************************
  * Author: Hussam al-Hertani (Hertaville.com)
  * Others are free to modify and use this code as they see fit so long as they
@@ -85,7 +88,7 @@
  *             please refrain from playing audio on the RPI while this code 
  *             is running.
  * *********************************************************************/
-class rpiPWM1 {
+class rpiPWM1 : pwm_control {
 
 public:
   rpiPWM1();

@@ -11,6 +11,6 @@ find_library(ncurses REQUIRED)
 
 include_directories(include)
 
-add_executable(cryo cryo.cpp console_ui.cpp DS18B20.cpp rpiPWM1.cpp)
+add_executable(cryo main.cpp cryo_control.cpp console_ui.cpp DS18B20.cpp rpiPWM1.cpp)
 
 target_link_libraries(cryo wiringPi ncurses stdc++fs pthread)

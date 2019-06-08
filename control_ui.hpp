@@ -14,8 +14,8 @@ class control_ui
     virtual ~control_ui() = default;
 
     // add common functions as needed..
-    virtual void send_temp_setting(const temp_t & temp) const;
-    virtual void send_duty_cycle(const duty_t & duty) const;
+    virtual void send_temp_setting_to_control(const temp_t & temp) const;
+    virtual void send_duty_setting_to_control(const duty_t & duty) const;
 
     protected:
 
