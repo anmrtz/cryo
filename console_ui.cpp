@@ -13,40 +13,23 @@ console_ui::console_ui(const std::shared_ptr<cryo_control> & cryo_ptr) :
     control_ui(cryo_ptr)
 {}
 
-void console_ui::update_sensor_reading(const sensor_state_t & state)
-{
-    std::lock_guard<std::mutex> lock(m_temp_lock);
-
-    if (!m_last_updates.count(state.first))
-        m_last_updates[state.first] = state.second.second;
-    else
-        m_last_updates[state.first] = m_sensor_states.at(state.first).second;
-
-    m_sensor_states[state.first] = state.second;
-}
-
 static inline void print_help()
 {
     std::cout << "\nList of commands:\n\n"
-        "on\t\t-> Turns GPIO PWM on\n"
-        "off\t\t-> Turns GPIO PWM off\n"
-        "duty %\t\t-> Sets GPIO PWM duty cycle to % (e.x. duty 50)\n"
-        "temp #\t\t-> Sets target temperature to # degrees Celsius (e.x. temp 6)\n"
-        "status\t\t-> Prints status\n"
-        "help\t\t-> Prints help menu\n\n"
-        "kill\t\t-> Turns off all PWM and kills the program\n"
+        "\tpwm on\t\t-> Turns GPIO PWM on\n"
+        "\tpwm off\t\t-> Turns GPIO PWM off\n"
+        "\tpower on\t-> Turns GPIO power pin on\n"
+        "\tpower off\t-> Turns GPIO power pin off\n"
+        "\tduty %\t\t-> Sets GPIO PWM duty cycle to % (e.x. duty 50)\n"
+        "\ttemp #\t\t-> Sets target temperature to # degrees Celsius (e.x. temp 6)\n"
+        "\tstatus\t\t-> Prints status\n"
+        "\thelp\t\t-> Prints help menu\n"
+        "\tkill\t\t-> Turns off all PWM and kills the program\n"
         "\nNotes:\n"
         "- All command parameters must be entered as integers (no decimals)\n"
         "- Duty percentages are numbered " << DUTY_CYCLE_MIN << " to " << DUTY_CYCLE_MAX << "\n"
         "- Temperature settings are numbered " << TEMP_SETTING_MIN << " to " << TEMP_SETTING_MAX << "\n"
         "- Command lines with extra words/characters are invalid\n\n";
-}
-
-static inline void print_status()
-{
-    std::cout << "\nCryo status:\n\n";
-
-    // TODO
 }
 
 static inline bool valid_temp(temp_t temp)
@@ -70,14 +53,19 @@ static inline bool valid_duty(duty_t percent)
     return true;
 }
 
-static inline void turn_off()
+void console_ui::print_status() const
 {
-    // TODO
-}
+    auto cryo = get_cryo_ptr();
+    const auto temp_reading = cryo->get_last_temp_reading();
 
-static inline void turn_on()
-{
-    // TODO
+    std::cout << "\nCryo status:\n\n" <<
+        "\tCurrent temperature:\t\t" << temp_reading.temp << '\n' <<
+        "\tLast temperature read time:\t" << temp_reading.time.count() << '\n' <<
+        "\tTarget temperature:\t\t" << cryo->get_temp_setting() << '\n' <<
+        "\tDuty setting:\t\t\t" << cryo->get_duty_setting() << '\n' <<
+        "\tPWM enabled:\t\t\t" << cryo->is_pwm_enabled() << '\n' <<
+        "\tPower enabled:\t\t\t" << cryo->is_power_enabled() << '\n' <<
+        "\n";
 }
 
 void console_ui::console_task()
@@ -123,7 +111,7 @@ void console_ui::console_task()
                 continue;
             std::cout << "Setting all cryo duty cycle to " << set_duty << "%\n";
 
-            // TODO
+            get_cryo_ptr()->update_duty_setting(set_duty);
         }
 
         else if (tokens.at(0) == "temp" && tokens.size() == 2)
@@ -141,24 +129,38 @@ void console_ui::console_task()
                 continue;
             std::cout << "Setting cryo target temperature to " << set_temp << " degrees Celsius\n";
 
-            // TODO
+            get_cryo_ptr()->update_temp_setting(set_temp);
         }
 
-        else if (tokens.at(0) == "on" && tokens.size() == 1)
+        else if (tokens.at(0) == "pwm" && tokens.at(1) == "on" && tokens.size() == 2)
         {
-            std::cout << "Turning on temperature control...\n";
+            std::cout << "Turning on PWM...\n";
 
-            turn_on();
+            get_cryo_ptr()->set_pwm_enable(true);
         }
 
-        else if (tokens.at(0) == "off" && tokens.size() == 1)
+        else if (tokens.at(0) == "pwm" && tokens.at(1) == "off" && tokens.size() == 2)
         {
-            std::cout << "Turning off temperature control...\n";
+            std::cout << "Turning off PWM...\n";
 
-            turn_off();
+            get_cryo_ptr()->set_pwm_enable(false);
         }
 
-        else if (tokens.at(0) == "status" && tokens.size() == 1)
+        else if (tokens.at(0) == "power" && tokens.at(1) == "on" && tokens.size() == 2)
+        {
+            std::cout << "Turning on power pin...\n";
+
+            get_cryo_ptr()->set_power_enable(true);
+        }
+
+        else if (tokens.at(0) == "power" && tokens.at(1) == "off" && tokens.size() == 2)
+        {
+            std::cout << "Turning off power pin...\n";
+
+            get_cryo_ptr()->set_power_enable(false);
+        }
+
+        else if ((tokens.at(0) == "status" || tokens.at(0) == "s") && tokens.size() == 1)
         {
             print_status();
         }
@@ -170,9 +172,12 @@ void console_ui::console_task()
 
         else if (tokens.at(0) == "kill" && tokens.size() == 1)
         {
-            std::cout << "Deactivating all PWM and killing program...\n";
+            std::cout << "Deactivating all GPIO and killing program...\n";
             
-            turn_off();
+            get_cryo_ptr()->set_pwm_enable(false);
+            get_cryo_ptr()->set_power_enable(false);
+
+            terminate_flag = true;
 
             break;
         }

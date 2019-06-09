@@ -7,10 +7,9 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -Wall")
 project(cryo LANGUAGES CXX)
 
 find_library(wiringPi REQUIRED)
-find_library(ncurses REQUIRED)
 
 include_directories(include)
 
 add_executable(cryo main.cpp cryo_control.cpp control_ui.cpp console_ui.cpp DS18B20.cpp rpiPWM1.cpp)
 
-target_link_libraries(cryo wiringPi ncurses stdc++fs pthread)
+target_link_libraries(cryo wiringPi stdc++fs atomic pthread)

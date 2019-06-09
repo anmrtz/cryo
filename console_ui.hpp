@@ -16,17 +16,9 @@ class console_ui : public control_ui
 
     void console_task(); // runs the console
 
-    // updates the values displayed by the console
-    void update_sensor_reading(const sensor_state_t &);
-    void update_temp_setting(const temp_reading_t &);
-
     protected:
 
     console_ui() = default;
 
-    temp_t m_temp_setting{20};
-    std::map<std::string,temp_reading_t> m_sensor_states; // sensor_id, reading
-    std::map<std::string,timepoint_t> m_last_updates; // sensor_id, last update time
-
-    std::mutex m_temp_lock;
+    void print_status() const;
 };

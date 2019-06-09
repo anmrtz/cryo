@@ -4,10 +4,14 @@
 #include <utility>
 #include <string>
 
-using timepoint_t = std::chrono::time_point<std::chrono::steady_clock>;
+using read_time_t = std::chrono::steady_clock::duration; // time since epoch
 using temp_t = uint32_t; // temperature in degrees celsius * 1000
-using temp_reading_t = std::pair<temp_t,timepoint_t>; // temp, timestamp
-using sensor_state_t = std::pair<std::string,temp_reading_t>; // sensor_id, temp_reading
+struct temp_reading_t
+{
+    temp_t temp;
+    read_time_t time;
+};
+static_assert(std::is_pod<temp_reading_t>::value); // verify std::atomic compatibility
 
 using duty_t = uint32_t; // duty cycle as percentage from 0 to 100
 

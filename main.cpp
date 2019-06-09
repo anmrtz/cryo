@@ -31,6 +31,7 @@ int main(int argc, char ** argv)
     cryo->register_ui_observer(console);
 
     auto console_thread = std::async(std::launch::async, &console_ui::console_task, std::ref(*console));
+    cryo->control_loop();
     console_thread.get();
 
     std::cout << "cryo process terminated\n" << std::flush;
