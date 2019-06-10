@@ -5,7 +5,9 @@
 #include <iterator>
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <thread>
+#include <chrono>
 
 extern std::atomic_bool terminate_flag;
 
@@ -24,7 +26,7 @@ static inline void print_help()
         "\ttemp #\t\t-> Sets target temperature to # degrees Celsius (e.x. temp 6)\n"
         "\tstatus\t\t-> Prints status\n"
         "\thelp\t\t-> Prints help menu\n"
-        "\tkill\t\t-> Turns off all PWM and kills the program\n"
+        "\tquit\t\t-> Turns off all PWM and kills the program\n"
         "\nNotes:\n"
         "- All command parameters must be entered as integers (no decimals)\n"
         "- Duty percentages are numbered " << DUTY_CYCLE_MIN << " to " << DUTY_CYCLE_MAX << "\n"
@@ -53,16 +55,40 @@ static inline bool valid_duty(duty_t percent)
     return true;
 }
 
+static std::string time_to_str(std::chrono::nanoseconds ns)
+{
+    std::stringstream os;
+    char fill = os.fill();
+    os.fill('0');
+
+    const auto m = std::chrono::duration_cast<std::chrono::minutes>(ns);
+    ns -= m;
+    const auto s = std::chrono::duration_cast<std::chrono::seconds>(ns);
+    ns -= s;
+    const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(ns);
+    ns -= ms;
+
+    os << std::setw(2) << m.count() << "m:"
+       << std::setw(2) << s.count() << "."
+       << std::setw(3) << ms.count() << "s";
+    os.fill(fill);
+    return os.str();
+}
+
 void console_ui::print_status() const
 {
     auto cryo = get_cryo_ptr();
     const auto temp_reading = cryo->get_last_temp_reading();
 
+    const std::chrono::nanoseconds time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            std::chrono::steady_clock::now().time_since_epoch()- temp_reading.time);
+
     std::cout << "\nCryo status:\n\n" <<
         "\tCurrent temperature:\t\t" << temp_reading.temp << '\n' <<
-        "\tLast temperature read time:\t" << temp_reading.time.count() << '\n' <<
+        "\tTime since last temp reading:\t" << time_to_str(time_ns) << '\n' <<
         "\tTarget temperature:\t\t" << cryo->get_temp_setting() << '\n' <<
         "\tDuty setting:\t\t\t" << cryo->get_duty_setting() << '\n' <<
+        "\tCurrent duty cycle:\t\t" << cryo->get_current_duty() << '\n' <<
         "\tPWM enabled:\t\t\t" << cryo->is_pwm_enabled() << '\n' <<
         "\tPower enabled:\t\t\t" << cryo->is_power_enabled() << '\n' <<
         "\n";
@@ -73,7 +99,7 @@ void console_ui::console_task()
     std::cout << "\n*****************************"
               "\nCryo interface initialized!"
               "\n*****************************\n\n";
-    print_status();
+    //print_status();
     print_help();
 
     std::string line;
@@ -90,7 +116,7 @@ void console_ui::console_task()
         std::getline(std::cin,line);
         if (line.empty())
             continue;
-        std::cout << "\nLine recieved: " << line << "\n\n";
+
         std::istringstream iss(line);
         std::vector<std::string> tokens((std::istream_iterator<std::string>(iss)),std::istream_iterator<std::string>());
         if (tokens.empty())
@@ -170,7 +196,7 @@ void console_ui::console_task()
             print_help();
         }
 
-        else if (tokens.at(0) == "kill" && tokens.size() == 1)
+        else if (tokens.at(0) == "quit" && tokens.size() == 1)
         {
             std::cout << "Deactivating all GPIO and killing program...\n";
             

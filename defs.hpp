@@ -14,6 +14,7 @@ struct temp_reading_t
 static_assert(std::is_pod<temp_reading_t>::value); // verify std::atomic compatibility
 
 using duty_t = uint32_t; // duty cycle as percentage from 0 to 100
+using freq_t = uint32_t; // frequency expressed in Hz
 
 using gpio_t = uint32_t;
 
@@ -21,3 +22,6 @@ constexpr temp_t TEMP_SETTING_MIN{0};
 constexpr temp_t TEMP_SETTING_MAX{20};
 constexpr duty_t DUTY_CYCLE_MIN{0};
 constexpr duty_t DUTY_CYCLE_MAX{100};
+
+constexpr gpio_t PWM_GPIO_PIN{18};
+constexpr freq_t PWM_FREQ_HZ{100'000};

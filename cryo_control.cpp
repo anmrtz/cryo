@@ -10,14 +10,12 @@
 extern std::atomic_bool terminate_flag;
 
 cryo_control::cryo_control(const std::shared_ptr<temp_sensor> & temp_sensor_ptr, const std::shared_ptr<pwm_control> & pwm_controller_ptr) :
-    m_pwm_controller(pwm_controller_ptr),
+    m_pwm_control(pwm_controller_ptr),
     m_temp_sensor(temp_sensor_ptr)
 {}
 
 cryo_control::~cryo_control()
-{
-    // TODO: switch off all GPIO
-}
+{}
 
 void cryo_control::control_loop()
 {
@@ -28,25 +26,32 @@ void cryo_control::control_loop()
 
     while(!terminate_flag)
     {
+        temp_reading_t temp_reading;
+        temp_reading.temp = m_temp_sensor->read_temp();
+        temp_reading.time = std::chrono::steady_clock::now().time_since_epoch();
+        m_last_temp_reading = temp_reading;
+
         if (m_temp_setting != last_temp_setting)
         {
-
             last_temp_setting = m_temp_setting;
         }
 
         if (m_duty_setting != last_duty_setting)
         {
-
             last_duty_setting = m_duty_setting;
+            m_pwm_control->set_duty(m_duty_setting);
         }
 
         if (m_pwm_enabled != last_pwm_state)
-        {
-
+        {            
             last_pwm_state = m_pwm_enabled;
+            if (m_pwm_enabled)
+                m_pwm_control->pwm_on();
+            else
+                m_pwm_control->pwm_off();
         }
 
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
 }
 
@@ -78,6 +83,11 @@ temp_t cryo_control::get_temp_setting() const
 duty_t cryo_control::get_duty_setting() const
 {
     return m_duty_setting;
+}
+
+duty_t cryo_control::get_current_duty() const
+{
+    return m_pwm_control->get_duty();
 }
 
 temp_t cryo_control::read_temp_sensor()
