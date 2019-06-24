@@ -24,4 +24,4 @@ constexpr duty_t DUTY_CYCLE_MIN{0};
 constexpr duty_t DUTY_CYCLE_MAX{100};
 
 constexpr gpio_t PWM_GPIO_PIN{18};
-constexpr freq_t PWM_FREQ_HZ{100'000};
+constexpr freq_t PWM_FREQ_HZ{6000};
