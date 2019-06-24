@@ -2,6 +2,10 @@
 
 #include <zmq.hpp>
 
+#include "json.hpp"
+using json = nlohmann::json;
+
+
 // this is used to set or read the process-wide termination flag
 extern std::atomic_bool terminate_flag;
 
