@@ -15,6 +15,7 @@ class adc_temp : public temp_sensor
     adc_temp();
     virtual ~adc_temp();
 
+    unsigned get_adc_reading();
     virtual temp_t read_temp() override;
 
     private:
