@@ -14,3 +14,4 @@ add_executable(cryo main.cpp cryo_control.cpp control_ui.cpp console_ui.cpp adc_
 add_executable(test_adc_temp test_adc_temp.cpp adc_temp.cpp)
 
 target_link_libraries(cryo pigpio stdc++fs atomic pthread zmq)
+target_link_libraries(test_adc_temp pigpio atomic pthread)
