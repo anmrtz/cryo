@@ -15,11 +15,13 @@ class adc_temp : public temp_sensor
     adc_temp();
     virtual ~adc_temp();
 
-    unsigned get_adc_reading();
+    unsigned get_adc_reading() const;
     virtual temp_t read_temp() override;
 
     private:
 
     int m_spi_handle{-1};
-    std::array<uint8_t,256> m_rx_buf,m_tx_buf;
+    int m_cs_gpio{-1};
+
+    void set_cs_pin(bool) const;
 };
