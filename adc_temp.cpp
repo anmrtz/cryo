@@ -50,6 +50,8 @@ void adc_temp::set_cs_pin(bool state) const
         throw std::runtime_error("adc_temp::set_cs_pin error: could not write to CS GPIO\n");
 }
 
+#include <bitset>
+
 unsigned adc_temp::get_adc_reading() const
 {
     if (m_spi_handle < 0)
@@ -57,8 +59,8 @@ unsigned adc_temp::get_adc_reading() const
 
     set_cs_pin(false);
 
-    std::array<uint8_t,1> TX_MSG = {0b1010};
-    std::array<uint8_t,2> RX_BUF{0};
+    static const std::array<uint8_t,1> TX_MSG = {0b11000'0};
+    static std::array<uint8_t,2> RX_BUF{0};
 
     if (spiWrite(m_spi_handle,(char*)TX_MSG.data(),TX_MSG.size()) != TX_MSG.size())
     {
@@ -66,23 +68,19 @@ unsigned adc_temp::get_adc_reading() const
         return {};
     }
 
-    if (spiRead(m_spi_handle,(char*)RX_BUF.data(),RX_BUF.size()) != RX_BUF.size())
+    if (spiRead(m_spi_handle,(char*)RX_BUF.data(),2) != 2)
     {
         std::cout << "adc_temp::get_adc_reading error: spiRead did not read expected number of bytes\n";
         return {};
     }
-
-    std::cout << "\nFirst buf: " << std::hex << (unsigned)RX_BUF.at(0) << ", second buf: " << std::hex << (unsigned)RX_BUF.at(1) << '\n';
-
-    unsigned reading{0};
-    RX_BUF[1] &= 0xef;
-    reading = RX_BUF[1];
-    reading <<= 8;
-    reading |= RX_BUF[0];
-
     set_cs_pin(true);
 
-    return reading;
+    RX_BUF[1] >>= 5;  
+    std::bitset<8> msb(RX_BUF[0]);
+    std::bitset<3> lsb(RX_BUF[1]);
+    std::bitset<11> value(msb.to_string() + lsb.to_string());
+
+    return value.to_ulong();
 }
 
 temp_t adc_temp::read_temp()
