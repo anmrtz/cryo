@@ -59,16 +59,16 @@ unsigned adc_temp::get_adc_reading() const
 
     set_cs_pin(false);
 
-    static const std::array<uint8_t,1> TX_MSG = {0b11000'0};
-    static std::array<uint8_t,2> RX_BUF{0};
+    static std::array<char,1> TX_MSG = {0b11000'0};
+    static std::array<char,2> RX_BUF{0};
 
-    if (spiWrite(m_spi_handle,(char*)TX_MSG.data(),TX_MSG.size()) != TX_MSG.size())
+    if (spiWrite(m_spi_handle,TX_MSG.data(),TX_MSG.size()) != TX_MSG.size())
     {
         std::cout << "adc_temp::get_adc_reading error: spiWrite did not write expected number of bytes\n";
         return {};
     }
 
-    if (spiRead(m_spi_handle,(char*)RX_BUF.data(),2) != 2)
+    if (spiRead(m_spi_handle,RX_BUF.data(),2) != 2)
     {
         std::cout << "adc_temp::get_adc_reading error: spiRead did not read expected number of bytes\n";
         return {};
