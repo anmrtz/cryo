@@ -4,12 +4,10 @@
 #include <exception>
 #include <thread>
 #include <chrono>
+#include <bitset>
+#include <map>
 
 #include <pigpio.h>
-
-#include "therm_lookup.hpp"
-
-#include <map>
 
 static const std::map<float,int> THERMISTOR_LOOKUP
 {
@@ -191,8 +189,6 @@ void adc_temp::set_cs_pin(bool state) const
     if (gpioWrite(m_cs_gpio,state))
         throw std::runtime_error("adc_temp::set_cs_pin error: could not write to CS GPIO\n");
 }
-
-#include <bitset>
 
 unsigned adc_temp::get_adc_reading() const
 {
