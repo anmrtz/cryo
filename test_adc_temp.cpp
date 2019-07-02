@@ -38,8 +38,7 @@ int main()
     {
         const auto reading = temp_sensor.get_adc_reading();
 
-        std::cout << "ADC reading: " << reading << " | " << std::dec << reading
-            << '\n';//<< "; temp value: " << temp_sensor.read_temp() << '\n';
+        std::cout << "ADC reading: " << reading << "; temp value: " << temp_sensor.read_temp() << '\n';
 
         std::this_thread::sleep_for(TEMP_READ_INTERVAL);
     }
