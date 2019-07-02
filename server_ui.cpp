@@ -18,8 +18,8 @@ void server_ui::task_loop()
     zmq::socket_t socket = initialize_socket();
 
     zmq::message_t request;
-    int target, power, recv_ts;
-    std::string type;
+    int target, recv_ts;
+    std::string type, power;
 
     while (true) {
 
@@ -28,13 +28,31 @@ void server_ui::task_loop()
             socket.recv(&request);
         } catch(zmq::error_t& e) {
             // Maybe interrupt for sending status?
+            std::cout << "Error receiving message" << std::endl;
         }
 
-        
         std::string message = std::string(
             static_cast<char*>(request.data()), request.size());
         
         parse_message(socket, message, type, target, power, recv_ts);
+
+        if (type == "power"){
+            if (power == "on") {
+                std::cout << "Turning on power pin...\n";
+                get_cryo_ptr()->set_power_enable(true);
+            }
+            else if (power == "off") {
+                std::cout << "Turning off power pin...\n";
+                get_cryo_ptr()->set_power_enable(false);
+            }
+        }
+        
+        else if (type == "temp") {
+            if (!valid_temp(target)) continue;
+            std::cout << "Setting cryo target temperature to " << target << " degrees Celsius\n";
+            get_cryo_ptr()->update_temp_setting(target);
+        }
+        
 
         time_t ts = time(0);
         std::string s = std::to_string((int)ts);
@@ -56,24 +74,30 @@ zmq::socket_t server_ui::initialize_socket() const {
 }
 
 void server_ui::parse_message(zmq::socket_t socket, std::string msg,
-                              std::string &type, int &target, int &power, 
+                              std::string &type, std::string &power, int &target, 
                               int &recv_ts) {
-    try {
-
-        auto j = json::parse(message.c_str());
-        type = j["type"];
-        target = j["target"];
-        power = j["power"];
-        recv_ts = j["timestamp"];
-
-    } catch(json::parse_error& e) {
-        // std::cout << "Error: "  << e.what() << std::endl;
-    }
+    
+    auto j = json::parse(msg.c_str());
+    type = j["type"];
+    target = j["target"];
+    power = j["power"];
+    recv_ts = j["timestamp"];
 }
 
 void server_ui::send_message(zmq::socket_t socket, std::string msg) {
-    std::string msgToClient(s);
-        zmq::message_t reply(msgToClient.size());
-        memcpy((void *) reply.data(), (msgToClient.c_str()), msgToClient.size());
-        socket.send(reply);
+    std::string msgToSend(msg);
+    zmq::message_t message(msgToSend.size());
+    memcpy((void *) message.data(), (msgToSend.c_str()), msgToSend.size());
+    socket.send(message);
+}
+
+static inline bool valid_temp(int temp)
+{
+    if (temp < TEMP_SETTING_MIN || temp > TEMP_SETTING_MAX)
+    {
+        std::cout << "ERROR: Specified LED must be integer from " <<
+            TEMP_SETTING_MIN << " to " << TEMP_SETTING_MAX << '\n';
+        return false;
+    }
+    return true;
 }
