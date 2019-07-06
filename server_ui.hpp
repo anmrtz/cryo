@@ -5,6 +5,7 @@
 #include <mutex>
 #include <memory>
 #include "defs.hpp"
+#include <zmq.hpp>
 
 // include json for modern c++
 #include "control_ui.hpp"

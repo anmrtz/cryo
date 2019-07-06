@@ -20,7 +20,8 @@ void server_ui::task_loop()
     zmq::socket_t socket = initialize_socket();
 
     zmq::message_t request;
-    int target, recv_ts;
+    temp_t target;
+    int recv_ts;
     std::string type, power;
 
     while (!terminate_flag) {
@@ -95,7 +96,7 @@ void server_ui::send_message(zmq::socket_t socket, std::string msg) {
     socket.send(message);
 }
 
-static inline bool valid_temp(int temp)
+static inline bool valid_temp(temp_t temp)
 {
     if (temp < TEMP_SETTING_MIN || temp > TEMP_SETTING_MAX)
     {
