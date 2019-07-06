@@ -7,17 +7,17 @@ class ZMQSocket(object):
 
     def __init__(self, zmq_type=zmq.REQ):
         
-        print(f'Initializing socket of type: {zmq_type}')
+        print('Initializing socket of type: {}'.format(zmq_type))
         self.context = zmq.Context()
         self.socket = self.context.socket(zmq_type)
 
     def connect(self, address='otter_service'):
     
-        connection = f'ipc://{address}'    
+        connection = 'ipc://{}'.format(address)    
 
-        print(f'Connecting to: {connection}')
+        print('Connecting to: {}'.format(connection))
         self.socket.connect(connection)
-        print(f'Connected!')
+        print('Connected!')
 
     def _send(self, message):
         self.socket.send_string(message)
@@ -45,14 +45,14 @@ def main():
     zmq.connect()
 
     for request in range(10):
-        print("Sending request %s …" % request)
+        print("Sending request {} …".format(request))
 
         target = str(random.randint(-10,10))
         
        
         reply = zmq.update(target)
 
-        print("Received reply %s [ %s ]" % (request, reply.decode("utf-8") ))
+        print("Received reply {} [ {} ]".format(request, reply.decode("utf-8")))
 
 
 
