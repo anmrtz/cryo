@@ -18,7 +18,7 @@ class server_ui : public control_ui
 
     void task_loop();                                                                       // runs the ui
     zmq::socket_t initialize_socket() const;                                                // Initializes the ipc bound socket
-    void parse_message(zmq::socket_t, std::string, std::string, std::string*, int*, int*);  // parse an incomming message
+    void parse_message(zmq::socket_t, std::string, std::string &, std::string &, int &, int &);  // parse an incomming message
     void send_message(zmq::socket_t, std::string);                                          // send message to socket
     static inline bool valid_temp(int);                                                     // Verify if valid temp
 

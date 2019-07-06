@@ -1,7 +1,9 @@
 #include "server_ui.hpp"
+#include "cryo_control.hpp"
 #include <zmq.hpp>
 #include "json.hpp"
 #include <iostream>
+#include <thread>
 
 using json = nlohmann::json;
 
@@ -21,7 +23,7 @@ void server_ui::task_loop()
     int target, recv_ts;
     std::string type, power;
 
-    while (true) {
+    while (!terminate_flag) {
 
         // Wait for recv msg and parse
         try {
@@ -34,7 +36,7 @@ void server_ui::task_loop()
         std::string message = std::string(
             static_cast<char*>(request.data()), request.size());
         
-        parse_message(socket, message, type, target, power, recv_ts);
+        parse_message(socket, message, type, power, target, recv_ts);
 
         if (type == "power"){
             if (power == "on") {
@@ -48,7 +50,7 @@ void server_ui::task_loop()
         }
         
         else if (type == "temp") {
-            if (!valid_temp(target)) continue;
+            if (!valid_temp(target) || get_cryo_ptr()->get_temp_setting() == target) continue;
             std::cout << "Setting cryo target temperature to " << target << " degrees Celsius\n";
             get_cryo_ptr()->update_temp_setting(target);
         }
@@ -57,7 +59,9 @@ void server_ui::task_loop()
         time_t ts = time(0);
         std::string s = std::to_string((int)ts);
         
-        send_message(socket, s)
+        send_message(socket, s);
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
         
     }
 }
@@ -74,8 +78,8 @@ zmq::socket_t server_ui::initialize_socket() const {
 }
 
 void server_ui::parse_message(zmq::socket_t socket, std::string msg,
-                              std::string &type, std::string &power, int &target, 
-                              int &recv_ts) {
+                              std::string & type, std::string & power, int & target, 
+                              int & recv_ts) {
     
     auto j = json::parse(msg.c_str());
     type = j["type"];
