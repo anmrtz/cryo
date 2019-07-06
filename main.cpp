@@ -6,7 +6,7 @@
 #include "defs.hpp"
 #include "cryo_control.hpp"
 #include "console_ui.hpp"
-#include "mock_temp_sensor.hpp"
+#include "adc_temp.hpp"
 
 std::atomic_bool terminate_flag{false}; // TODO: remove this
 
@@ -26,7 +26,7 @@ int main(int argc, char ** argv)
     sigaction(SIGINT, &sigIntHandler, nullptr);
 
     std::shared_ptr<cryo_control> cryo = std::make_shared<cryo_control>(
-            std::make_shared<mock_temp_sensor>(), std::make_shared<pwm_control>(PWM_GPIO_PIN,PWM_FREQ_HZ));
+            std::make_shared<adc_temp>(), std::make_shared<pwm_control>(PWM_GPIO_PIN,PWM_FREQ_HZ));
     std::shared_ptr<console_ui> console = std::make_shared<console_ui>(cryo);
     cryo->register_ui_observer(console);
 

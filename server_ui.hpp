@@ -4,6 +4,9 @@
 #include <string>
 #include <mutex>
 #include <memory>
+
+#include <zmq.hpp>
+
 #include "defs.hpp"
 #include <zmq.hpp>
 
@@ -19,9 +22,9 @@ class server_ui : public control_ui
 
     void task_loop();                                                                       // runs the ui
     zmq::socket_t initialize_socket() const;                                                // Initializes the ipc bound socket
-    void parse_message(zmq::socket_t, std::string, std::string &, std::string &, int &, int &);  // parse an incomming message
-    void send_message(zmq::socket_t, std::string);                                          // send message to socket
-    static inline bool valid_temp(int);                                                     // Verify if valid temp
+    void parse_message(zmq::socket_t &, std::string, std::string &, std::string &, temp_t &, int &);  // parse an incomming message
+    void send_message(zmq::socket_t &, std::string);                                          // send message to socket
+    inline bool valid_temp(temp_t);                                                     // Verify if valid temp
 
     protected:
 

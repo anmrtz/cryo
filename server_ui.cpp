@@ -63,7 +63,6 @@ void server_ui::task_loop()
         send_message(socket, s);
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
-        
     }
 }
 
@@ -78,25 +77,25 @@ zmq::socket_t server_ui::initialize_socket() const {
     return socket;
 }
 
-void server_ui::parse_message(zmq::socket_t socket, std::string msg,
-                              std::string & type, std::string & power, int & target, 
+void server_ui::parse_message(zmq::socket_t & socket, std::string msg,
+                              std::string & type, std::string & power, temp_t & target, 
                               int & recv_ts) {
     
-    auto j = json::parse(msg.c_str());
-    type = j["type"];
-    target = j["target"];
-    power = j["power"];
-    recv_ts = j["timestamp"];
+    const auto j = json::parse(msg);
+    j.at("type").get_to(type);
+    j.at("target").get_to(target);
+    j.at("power").get_to(power);
+    j.at("timestamp").get_to(recv_ts);
 }
 
-void server_ui::send_message(zmq::socket_t socket, std::string msg) {
+void server_ui::send_message(zmq::socket_t & socket, std::string msg) {
     std::string msgToSend(msg);
     zmq::message_t message(msgToSend.size());
     memcpy((void *) message.data(), (msgToSend.c_str()), msgToSend.size());
     socket.send(message);
 }
 
-static inline bool valid_temp(temp_t temp)
+inline bool server_ui::valid_temp(temp_t temp)
 {
     if (temp < TEMP_SETTING_MIN || temp > TEMP_SETTING_MAX)
     {
