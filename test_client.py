@@ -1,70 +1,61 @@
-//
-//  Hello World server in C++
-//  Binds REP socket to tcp://*:5555
-//  Expects "Hello" from client, replies with "World"
-//
-#include <zmq.hpp>
-#include <ctime>
-#include <string>
-#include <iostream>
-#include <sstream>
-#include <time.h>
-#include <string>
-#include <unistd.h>
-#include "json.hpp"
+import time
+import zmq
+import random
+import json
 
-#ifndef _WIN32
-    #include <unistd.h>
-#else
-    #include <windows.h>
-    #define sleep(n)    Sleep(n)
-#endif
+class ZMQSocket(object):
 
-using json = nlohmann::json;
+    def __init__(self, zmq_type=zmq.REQ):
+        
+        print(f'Initializing socket of type: {zmq_type}')
+        self.context = zmq.Context()
+        self.socket = self.context.socket(zmq_type)
 
-int main () {
+    def connect(self, address='otter_service'):
     
-    zmq::context_t context (1);
-    zmq::socket_t socket (context, ZMQ_REP);
-    socket.bind("ipc://otter_service");
+        connection = f'ipc://{address}'    
 
-    
-    zmq::message_t request;
-    uint32_t target;
-    int recv_ts;
-    std::string type, power;
+        print(f'Connecting to: {connection}')
+        self.socket.connect(connection)
+        print(f'Connected!')
 
-    while (true) {
+    def _send(self, message):
+        self.socket.send_string(message)
+        return self.socket.recv()
 
-        socket.recv(&request);
-        std::string message = std::string(static_cast<char*>(request.data()),request.size());
-        std::cout << message << std::endl;
+    def update(self, new_target=None, msg_type="target", power="on"):
+        timestamp = int(time.time())
+        payload = json.dumps(
+            {
+                "type": msg_type,
+                "target": toSigned32(int(new_target)),
+                "power": power,
+                "timestamp": timestamp
+            }
+        )
+        return self._send(payload)
 
-        try {
+def toSigned32(n):
+    n = n & 0xffffffff
+    return n | (-(n & 0x80000000))
 
-            auto j = json::parse(message.c_str());
+def main():
 
-            type = j["type"];
-            target = j["target"];
-            power = j["power"];
-            recv_ts = j["timestamp"];
+    zmq = ZMQSocket()
+    zmq.connect()
 
-        } catch(json::parse_error& e) {
-            std::cout << "Error: "  << e.what() << std::endl;
-        }
+    for request in range(10):
+        print("Sending request %s …" % request)
+
+        target = str(random.randint(-10,10))
         
+       
+        reply = zmq.update(target)
 
-        time_t ts = time(0);
-        std::string s = std::to_string((int)ts);
-        
-        // Do some stuff
-        sleep(1);
+        print("Received reply %s [ %s ]" % (request, reply.decode("utf-8") ))
 
-        
-        std::string msgToClient(s);
-        zmq::message_t reply(msgToClient.size());
-        memcpy((void *) reply.data(), (msgToClient.c_str()), msgToClient.size());
-        socket.send(reply);
-    }
-    return 0;
-}
+
+
+
+if __name__ == "__main__":
+    main()
