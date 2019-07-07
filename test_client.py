@@ -13,7 +13,8 @@ class ZMQSocket(object):
 
     def connect(self, address='otter_service'):
     
-        connection = 'ipc://{}'.format(address)    
+        #connection = 'ipc://{}'.format(address)    
+        connection = 'tcp://localhost:5555'    
 
         print('Connecting to: {}'.format(connection))
         self.socket.connect(connection)

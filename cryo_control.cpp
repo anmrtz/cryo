@@ -63,6 +63,7 @@ void cryo_control::register_ui_observer(const std::shared_ptr<control_ui> & ui_p
 void cryo_control::update_temp_setting(const temp_t & temp)
 {
     m_temp_setting = temp;
+    std::cout << "TEMP SETTING updated: " << temp << '\n';
 }
 
 void cryo_control::update_duty_setting(const duty_t & duty)
