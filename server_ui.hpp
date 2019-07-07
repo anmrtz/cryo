@@ -2,15 +2,11 @@
 
 #include <map>
 #include <string>
-#include <mutex>
 #include <memory>
 
 #include <zmq.hpp>
 
 #include "defs.hpp"
-#include <zmq.hpp>
-
-// include json for modern c++
 #include "control_ui.hpp"
 
 class server_ui : public control_ui
@@ -21,9 +17,7 @@ class server_ui : public control_ui
     virtual ~server_ui() = default;
 
     void task_loop();                                                                       // runs the ui
-    void parse_message(std::string, std::string &, std::string &, temp_t &, int &);  // parse an incomming message
     void send_message(std::string);                                          // send message to socket
-    bool valid_temp(temp_t);                                                     // Verify if valid temp
 
     protected:
 
