@@ -18,11 +18,8 @@ console_ui::console_ui(const std::shared_ptr<cryo_control> & cryo_ptr) :
 static inline void print_help()
 {
     std::cout << "\nList of commands:\n\n"
-        "\tpwm on\t\t-> Turns GPIO PWM on\n"
-        "\tpwm off\t\t-> Turns GPIO PWM off\n"
-        "\tpower on\t-> Turns GPIO power pin on\n"
-        "\tpower off\t-> Turns GPIO power pin off\n"
-        "\tduty %\t\t-> Sets GPIO PWM duty cycle to % (e.x. duty 50)\n"
+        "\tstart\t-> Turns cooling system on\n"
+        "\tstop\t-> Turns cooling system off\n"
         "\ttemp #\t\t-> Sets target temperature to # degrees Celsius (e.x. temp 6)\n"
         "\tstatus\t\t-> Prints status\n"
         "\thelp\t\t-> Prints help menu\n"
@@ -30,29 +27,8 @@ static inline void print_help()
         "\nNotes:\n"
         "- All command parameters must be entered as integers (no decimals)\n"
         "- Duty percentages are numbered " << DUTY_CYCLE_MIN << " to " << DUTY_CYCLE_MAX << "\n"
-        "- Temperature settings are numbered " << TEMP_SETTING_MIN << " to " << TEMP_SETTING_MAX << "\n"
+        "- Temperature settings are numbered " << TEMP_SETTING_MIN/1000 << " to " << TEMP_SETTING_MAX/1000 << "\n"
         "- Command lines with extra words/characters are invalid\n\n";
-}
-
-static inline bool valid_temp(temp_t temp)
-{
-    if (temp < TEMP_SETTING_MIN || temp > TEMP_SETTING_MAX)
-    {
-        std::cout << "ERROR: Specified LED must be integer from " <<
-            TEMP_SETTING_MIN << " to " << TEMP_SETTING_MAX << '\n';
-        return false;
-    }
-    return true;
-}
-
-static inline bool valid_duty(duty_t percent)
-{
-    if (percent < 0 || percent > 100)
-    {
-        std::cout << "ERROR: Duty percentage must be integer within [0,100]\n";
-        return false;
-    }
-    return true;
 }
 
 static std::string time_to_str(std::chrono::nanoseconds ns)
@@ -84,13 +60,11 @@ void console_ui::print_status() const
             std::chrono::steady_clock::now().time_since_epoch()- temp_reading.time);
 
     std::cout << "\nCryo status:\n\n" <<
-        "\tCurrent temperature:\t\t" << temp_reading.temp << '\n' <<
+        "\tCurrent temperature:\t\t" << (float)temp_reading.temp/1000.0 << '\n' <<
         "\tTime since last temp reading:\t" << time_to_str(time_ns) << '\n' <<
-        "\tTarget temperature:\t\t" << cryo->get_temp_setting() << '\n' <<
-        "\tDuty setting:\t\t\t" << cryo->get_duty_setting() << '\n' <<
+        "\tTarget temperature:\t\t" << (float)cryo->get_temp_setting()/1000.0 << '\n' <<
         "\tCurrent duty cycle:\t\t" << cryo->get_current_duty() << '\n' <<
-        "\tPWM enabled:\t\t\t" << cryo->is_pwm_enabled() << '\n' <<
-        "\tPower enabled:\t\t\t" << cryo->is_power_enabled() << '\n' <<
+        "\tCooling enabled:\t\t" << cryo->is_cooling_active() << '\n' <<
         "\n";
 }
 
@@ -122,25 +96,7 @@ void console_ui::console_task()
         if (tokens.empty())
             continue;
 
-        if (tokens.at(0) == "duty" && tokens.size() == 2)
-        {
-            try
-            {
-                set_duty = std::stoul(tokens.at(1));
-            }
-            catch (std::logic_error & e)
-            {
-                std::cout << "String to unsigned conversion error: " << e.what() << '\n';
-            }
-
-            if (!valid_duty(set_duty))
-                continue;
-            std::cout << "Setting all cryo duty cycle to " << set_duty << "%\n";
-
-            get_cryo_ptr()->update_duty_setting(set_duty);
-        }
-
-        else if (tokens.at(0) == "temp" && tokens.size() == 2)
+        if (tokens.at(0) == "temp" && tokens.size() == 2)
         {
             try
             {
@@ -151,39 +107,24 @@ void console_ui::console_task()
                 std::cout << "String to unsigned conversion error: " << e.what() << '\n';
             }
 
-            if (!valid_temp(set_temp))
-                continue;
-            std::cout << "Setting cryo target temperature to " << set_temp << " degrees Celsius\n";
-
-            get_cryo_ptr()->update_temp_setting(set_temp);
+            if (get_cryo_ptr()->update_temp_setting(set_temp*1000))
+                std::cout << "Setting cryo target temperature to " << set_temp << " degrees C\n";
+            else
+                std::cout << "Failed to set cryo target temperature to " << set_temp << " degrees C\n";
         }
 
-        else if (tokens.at(0) == "pwm" && tokens.at(1) == "on" && tokens.size() == 2)
+        else if (tokens.at(0) == "start" && tokens.size() == 1)
         {
-            std::cout << "Turning on PWM...\n";
+            std::cout << "Turning on cooling system...\n";
 
-            get_cryo_ptr()->set_pwm_enable(true);
+            get_cryo_ptr()->set_cooling_active(true);
         }
 
-        else if (tokens.at(0) == "pwm" && tokens.at(1) == "off" && tokens.size() == 2)
+        else if (tokens.at(0) == "stop" && tokens.size() == 1)
         {
-            std::cout << "Turning off PWM...\n";
+            std::cout << "Turning off cooling system...\n";
 
-            get_cryo_ptr()->set_pwm_enable(false);
-        }
-
-        else if (tokens.at(0) == "power" && tokens.at(1) == "on" && tokens.size() == 2)
-        {
-            std::cout << "Turning on power pin...\n";
-
-            get_cryo_ptr()->set_power_enable(true);
-        }
-
-        else if (tokens.at(0) == "power" && tokens.at(1) == "off" && tokens.size() == 2)
-        {
-            std::cout << "Turning off power pin...\n";
-
-            get_cryo_ptr()->set_power_enable(false);
+            get_cryo_ptr()->set_cooling_active(false);
         }
 
         else if ((tokens.at(0) == "status" || tokens.at(0) == "s") && tokens.size() == 1)
@@ -196,12 +137,11 @@ void console_ui::console_task()
             print_help();
         }
 
-        else if (tokens.at(0) == "quit" && tokens.size() == 1)
+        else if ((tokens.at(0) == "quit" || tokens.at(0) == "exit") && tokens.size() == 1)
         {
             std::cout << "Deactivating all GPIO and killing program...\n";
             
-            get_cryo_ptr()->set_pwm_enable(false);
-            get_cryo_ptr()->set_power_enable(false);
+            get_cryo_ptr()->set_cooling_active(false);
 
             terminate_flag = true;
 

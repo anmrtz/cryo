@@ -11,17 +11,6 @@ using json = nlohmann::json;
 // this is used to set or read the process-wide termination flag
 extern std::atomic_bool terminate_flag;
 
-static inline bool valid_temp(temp_t temp)
-{
-    if (temp < TEMP_SETTING_MIN || temp > TEMP_SETTING_MAX)
-    {
-        std::cout << "ERROR: Specified LED must be integer from " <<
-            TEMP_SETTING_MIN << " to " << TEMP_SETTING_MAX << '\n';
-        return false;
-    }
-    return true;
-}
-
 server_ui::server_ui(const std::shared_ptr<cryo_control> & cryo_ptr) :
     control_ui(cryo_ptr),
     m_zmq_context(zmq::context_t(1)),
@@ -78,21 +67,20 @@ void server_ui::task_loop()
 
         if (type == "power"){
             if (power == "on") {
-                std::cout << "Turning on power pin...\n";
-                get_cryo_ptr()->set_power_enable(true);
+                std::cout << "Turning on cooling system...\n";
+                get_cryo_ptr()->set_cooling_active(true);
             }
             else if (power == "off") {
-                std::cout << "Turning off power pin...\n";
-                get_cryo_ptr()->set_power_enable(false);
+                std::cout << "Turning off cooling system...\n";
+                get_cryo_ptr()->set_cooling_active(false);
             }
         }
         else if (type == "target") {
-            if (!valid_temp(target) || get_cryo_ptr()->get_temp_setting() == target) 
-            {
-                std::cout << "server_ui::task_loop invalid target temperature received: " << target << '\n';
-            }
-            std::cout << "Setting cryo target temperature to " << target << " degrees Celsius\n";
-            get_cryo_ptr()->update_temp_setting(target);
+            if (get_cryo_ptr()->update_temp_setting(target*1000))
+                std::cout << "Setting cryo target temperature to " << target << " degrees C\n";
+            else
+                std::cout << "Failed to set cryo target temperature to " << target << " degrees C\n";
+
         }
         else
         {

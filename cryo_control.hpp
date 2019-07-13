@@ -24,17 +24,12 @@ class cryo_control
 
     temp_reading_t get_last_temp_reading() const;
     temp_t get_temp_setting() const;
-    duty_t get_duty_setting() const;
     duty_t get_current_duty() const;
 
-    void update_temp_setting(const temp_t & temp);
-    void update_duty_setting(const duty_t & duty);
+    bool update_temp_setting(const temp_t & temp);
 
-    void set_pwm_enable(bool);
-    bool is_pwm_enabled() const;
-
-    void set_power_enable(bool);
-    bool is_power_enabled() const;
+    void set_cooling_active(bool);
+    bool is_cooling_active() const;
 
     void control_loop(); // main temperature control loop
 
@@ -53,8 +48,6 @@ class cryo_control
 
     std::atomic<temp_reading_t> m_last_temp_reading;
     std::atomic<temp_t> m_temp_setting;
-    std::atomic<duty_t> m_max_duty;
 
-    std::atomic_bool m_pwm_enabled{false};
     std::atomic_bool m_power_enabled{false};
 };
