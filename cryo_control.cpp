@@ -11,7 +11,8 @@ extern std::atomic_bool terminate_flag;
 
 cryo_control::cryo_control(const std::shared_ptr<temp_sensor> & temp_sensor_ptr, const std::shared_ptr<pwm_control> & pwm_controller_ptr) :
     m_pwm_control(pwm_controller_ptr),
-    m_temp_sensor(temp_sensor_ptr)
+    m_temp_sensor(temp_sensor_ptr),
+    m_max_duty(DUTY_CYCLE_MAX)
 {}
 
 cryo_control::~cryo_control()
@@ -19,7 +20,7 @@ cryo_control::~cryo_control()
 
 void cryo_control::control_loop()
 {
-    duty_t last_duty_setting{m_duty_setting};
+    duty_t last_duty_setting{m_max_duty};
     temp_t last_temp_setting{m_temp_setting};
 
     bool last_pwm_state{m_pwm_enabled};
@@ -36,10 +37,10 @@ void cryo_control::control_loop()
             last_temp_setting = m_temp_setting;
         }
 
-        if (m_duty_setting != last_duty_setting)
+        if (m_max_duty != last_duty_setting)
         {
-            last_duty_setting = m_duty_setting;
-            m_pwm_control->set_duty(m_duty_setting);
+            last_duty_setting = m_max_duty;
+            m_pwm_control->set_duty(m_max_duty);
         }
 
         if (m_pwm_enabled != last_pwm_state)
@@ -67,7 +68,7 @@ void cryo_control::update_temp_setting(const temp_t & temp)
 
 void cryo_control::update_duty_setting(const duty_t & duty)
 {
-    m_duty_setting = duty;
+    m_max_duty = duty;
 }
 
 temp_reading_t cryo_control::get_last_temp_reading() const
@@ -82,7 +83,7 @@ temp_t cryo_control::get_temp_setting() const
 
 duty_t cryo_control::get_duty_setting() const
 {
-    return m_duty_setting;
+    return m_max_duty;
 }
 
 duty_t cryo_control::get_current_duty() const

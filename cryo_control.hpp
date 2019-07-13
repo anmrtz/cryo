@@ -53,7 +53,7 @@ class cryo_control
 
     std::atomic<temp_reading_t> m_last_temp_reading;
     std::atomic<temp_t> m_temp_setting;
-    std::atomic<duty_t> m_duty_setting;
+    std::atomic<duty_t> m_max_duty;
 
     std::atomic_bool m_pwm_enabled{false};
     std::atomic_bool m_power_enabled{false};

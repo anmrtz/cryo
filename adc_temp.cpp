@@ -149,7 +149,7 @@ static constexpr unsigned DEFAULT_SPI_CHANNEL{0};
 static constexpr unsigned DEFAULT_SPI_FLAGS{0};
 static constexpr unsigned DEFAULT_CS_GPIO{22};
 
-static constexpr float REFERENCE_RESISTOR_KOHMS{8.2};
+static constexpr float REFERENCE_RESISTOR_KOHMS{8.26};
 static constexpr float REFERENCE_VOLTAGE{3.3};
 
 adc_temp::adc_temp() :
