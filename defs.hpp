@@ -5,7 +5,7 @@
 #include <string>
 
 using read_time_t = std::chrono::steady_clock::duration; // time since epoch
-using temp_t = uint32_t; // temperature in degrees celsius * 1000
+using temp_t = int32_t; // temperature in degrees celsius * 1000
 struct temp_reading_t
 {
     temp_t temp;

@@ -15,13 +15,14 @@ cryo_control::cryo_control(const std::shared_ptr<temp_sensor> & temp_sensor_ptr,
 {}
 
 cryo_control::~cryo_control()
-{}
+{
+    m_pwm_control->pwm_off();
+}
 
 void cryo_control::control_loop()
 {
-    temp_t last_temp_setting{m_temp_setting};
-
-    bool last_power_state{m_power_enabled};
+    m_pwm_control->pwm_off();
+    m_pwm_control->set_duty(DUTY_CYCLE_ACTIVE);
 
     while(!terminate_flag)
     {
@@ -30,19 +31,12 @@ void cryo_control::control_loop()
         temp_reading.time = std::chrono::steady_clock::now().time_since_epoch();
         m_last_temp_reading = temp_reading;
 
-        if (m_temp_setting != last_temp_setting)
-        {
-            last_temp_setting = m_temp_setting;
-        }
-
-        if (m_power_enabled != last_power_state)
-        {            
-            last_power_state = m_power_enabled;
-            if (m_power_enabled)
-                m_pwm_control->pwm_on();
-            else
-                m_pwm_control->pwm_off();
-        }
+        if (temp_reading.temp <= m_temp_setting)
+            m_pwm_control->pwm_off();
+        else if (m_power_enabled)
+            m_pwm_control->pwm_on();
+        else
+            m_pwm_control->pwm_off();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }

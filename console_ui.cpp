@@ -100,7 +100,7 @@ void console_ui::console_task()
         {
             try
             {
-                set_temp = std::stoul(tokens.at(1));
+                set_temp = std::stoi(tokens.at(1));
             }
             catch (std::logic_error & e)
             {
