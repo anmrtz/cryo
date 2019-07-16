@@ -11,6 +11,8 @@ using json = nlohmann::json;
 // this is used to set or read the process-wide termination flag
 extern std::atomic_bool terminate_flag;
 
+constexpr std::chrono::milliseconds SOCKET_UPDATE_INTERVAL{50};
+
 server_ui::server_ui(const std::shared_ptr<cryo_control> & cryo_ptr) :
     control_ui(cryo_ptr),
     m_zmq_context(zmq::context_t(1)),
@@ -82,14 +84,16 @@ void server_ui::process_gui_command(zmq::message_t & zmq_msg)
 void server_ui::send_cryo_status()
 {
     const auto temp_reading = get_cryo_ptr()->get_last_temp_reading();
-    const auto duty = get_cryo_ptr()->get_current_duty(); 
+    const auto duty = get_cryo_ptr()->get_current_duty();
+    const auto is_cooling_on = get_cryo_ptr()->is_cooling_active();
 
     const json j = 
     {
         {"type","status"},
         {"curr_temp",temp_reading.temp},
-        {"power",duty},
-        {"timestamp",temp_reading.time.count()}
+        {"duty",duty},
+        {"timestamp",temp_reading.time.count()},
+        {"cooling_on",is_cooling_on}
     };
 
     send_message(m_zmq_to_gui, j.dump());
@@ -101,7 +105,7 @@ void server_ui::task_loop()
 
     while (!terminate_flag) 
     {
-        std::this_thread::sleep_for(std::chrono::milliseconds(50));
+        std::this_thread::sleep_for(SOCKET_UPDATE_INTERVAL);
 
         // check for commands from the GUI process
         try
@@ -121,7 +125,7 @@ void server_ui::task_loop()
         send_cryo_status();
     }
 
-    // send shutdown notification to GUI
+    // send shutdown notification to GUI upon termination
     const json j = 
     {
         {"type","shutdown"}
@@ -137,7 +141,7 @@ void server_ui::send_message(zmq::socket_t & sock, const std::string & msg)
 
     try
     {
-        sock.send(message);
+        sock.send(message, ZMQ_DONTWAIT);
     }
     catch(zmq::error_t& e) 
     {
