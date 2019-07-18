@@ -56,15 +56,19 @@ void console_ui::print_status() const
     auto cryo = get_cryo_ptr();
     const auto temp_reading = cryo->get_last_temp_reading();
 
-    const std::chrono::nanoseconds time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+    const std::chrono::nanoseconds last_read_time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
             std::chrono::steady_clock::now().time_since_epoch()- temp_reading.time);
+
+    const std::chrono::nanoseconds active_time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
+            cryo->get_active_duration());
 
     std::cout << "\nCryo status:\n\n" <<
         "\tCurrent temperature:\t\t" << (float)temp_reading.temp/1000.0 << '\n' <<
-        "\tTime since last temp reading:\t" << time_to_str(time_ns) << '\n' <<
+        "\tTime since last temp reading:\t" << time_to_str(last_read_time_ns) << '\n' <<
         "\tTarget temperature:\t\t" << (float)cryo->get_temp_setting()/1000.0 << '\n' <<
         "\tCurrent duty cycle:\t\t" << cryo->get_current_duty() << '\n' <<
         "\tCooling enabled:\t\t" << cryo->is_cooling_active() << '\n' <<
+        "\tActive duration:\t\t" << time_to_str(active_time_ns) << '\n' <<
         "\n";
 }
 

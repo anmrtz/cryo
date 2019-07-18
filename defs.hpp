@@ -4,12 +4,12 @@
 #include <utility>
 #include <string>
 
-using read_time_t = std::chrono::steady_clock::duration; // time since epoch
+using duration_t = std::chrono::steady_clock::duration; // time since epoch
 using temp_t = int32_t; // temperature in degrees celsius * 1000
 struct temp_reading_t
 {
     temp_t temp;
-    read_time_t time;
+    duration_t time;
 };
 static_assert(std::is_pod<temp_reading_t>::value); // verify std::atomic compatibility
 

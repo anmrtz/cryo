@@ -32,7 +32,10 @@ void cryo_control::control_loop()
         m_last_temp_reading = temp_reading;
 
         if (temp_reading.temp <= m_temp_setting)
+        {
             m_pwm_control->pwm_off();
+            set_cooling_active(false);
+        }
         else if (m_power_enabled)
             m_pwm_control->pwm_on();
         else
@@ -83,9 +86,21 @@ temp_t cryo_control::read_temp_sensor()
 void cryo_control::set_cooling_active(bool is_enabled)
 {
     m_power_enabled = is_enabled;
+    if (m_power_enabled)
+        m_start_time = std::chrono::steady_clock::now();
+    else
+        m_stop_time = std::chrono::steady_clock::now();
 }
 
 bool cryo_control::is_cooling_active() const
 {
     return m_power_enabled;
+}
+
+duration_t cryo_control::get_active_duration() const
+{
+    if (m_power_enabled)
+        return std::chrono::steady_clock::now() - m_start_time.load();
+    else
+        return m_stop_time.load() - m_start_time.load();
 }

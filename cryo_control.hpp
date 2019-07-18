@@ -31,6 +31,8 @@ class cryo_control
     void set_cooling_active(bool);
     bool is_cooling_active() const;
 
+    duration_t get_active_duration() const;
+
     void control_loop(); // main temperature control loop
 
     private:
@@ -50,4 +52,7 @@ class cryo_control
     std::atomic<temp_t> m_temp_setting;
 
     std::atomic_bool m_power_enabled{false};
+
+    std::atomic<std::chrono::steady_clock::time_point> m_start_time{std::chrono::steady_clock::now()};
+    std::atomic<std::chrono::steady_clock::time_point> m_stop_time{std::chrono::steady_clock::now()};
 };
