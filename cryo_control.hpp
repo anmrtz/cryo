@@ -17,7 +17,7 @@ class cryo_control
 {
     public:
 
-    cryo_control(const std::shared_ptr<temp_sensor> &, const std::shared_ptr<pwm_control> &);
+    cryo_control();
     ~cryo_control();
 
     void register_ui_observer(const std::shared_ptr<control_ui> &);
@@ -37,15 +37,18 @@ class cryo_control
 
     private:
 
-    cryo_control() = default;
-
     temp_t read_temp_sensor();
 
     void send_temp_reading_to_uis() const;
     void send_temp_setting_to_uis() const;
 
+    void start_tone();
+    void stop_tone();
+
     std::vector<std::weak_ptr<control_ui>> m_active_ifaces; // observers
     std::shared_ptr<pwm_control> m_pwm_control;
+    std::shared_ptr<pwm_control> m_tone_control;
+
     std::shared_ptr<temp_sensor> m_temp_sensor;
 
     std::atomic<temp_reading_t> m_last_temp_reading;
@@ -55,4 +58,7 @@ class cryo_control
 
     std::atomic<std::chrono::steady_clock::time_point> m_start_time{std::chrono::steady_clock::now()};
     std::atomic<std::chrono::steady_clock::time_point> m_stop_time{std::chrono::steady_clock::now()};
+
+    bool m_tone_running{false};
+    std::chrono::steady_clock::time_point m_tone_start;
 };

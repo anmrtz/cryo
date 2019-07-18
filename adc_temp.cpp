@@ -233,9 +233,18 @@ temp_t adc_temp::read_temp()
     
     // parse out temperature value
 
-    auto therm_it = THERMISTOR_LOOKUP.lower_bound(thermistor_value);
+    const auto therm_it = THERMISTOR_LOOKUP.lower_bound(thermistor_value);
     if (therm_it == THERMISTOR_LOOKUP.end())
         return {};
-    else
-        return therm_it->second * 1000;
+
+    float temp_reading = therm_it->second;
+    if (therm_it != --THERMISTOR_LOOKUP.end())
+    {
+        // get residual slope
+        const auto therm_it_upper = std::next(therm_it);
+        const float slope = ((float)(therm_it_upper->second - therm_it->second))/(therm_it_upper->first - therm_it->first);
+        temp_reading += slope * (thermistor_value - therm_it->first); 
+    }
+
+    return (temp_t)(temp_reading * 1000);
 }

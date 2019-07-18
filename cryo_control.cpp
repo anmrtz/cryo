@@ -6,12 +6,22 @@
 #include <atomic>
 
 #include "cryo_control.hpp"
+#include "adc_temp.hpp"
 
 extern std::atomic_bool terminate_flag;
 
-cryo_control::cryo_control(const std::shared_ptr<temp_sensor> & temp_sensor_ptr, const std::shared_ptr<pwm_control> & pwm_controller_ptr) :
-    m_pwm_control(pwm_controller_ptr),
-    m_temp_sensor(temp_sensor_ptr)
+static constexpr std::chrono::seconds TONE_DURATION{2};
+
+static constexpr gpio_t TONE_GPIO_PIN{13};
+static constexpr freq_t TONE_FREQ_HZ{420};
+
+static constexpr gpio_t PWM_GPIO_PIN{18};
+static constexpr freq_t PWM_FREQ_HZ{6000};
+
+cryo_control::cryo_control() :
+    m_pwm_control(std::make_shared<pwm_control>(PWM_GPIO_PIN,PWM_FREQ_HZ)),
+    m_tone_control(std::make_shared<pwm_control>(TONE_GPIO_PIN,TONE_FREQ_HZ)),
+    m_temp_sensor(std::make_shared<adc_temp>())
 {}
 
 cryo_control::~cryo_control()
@@ -24,6 +34,9 @@ void cryo_control::control_loop()
     m_pwm_control->pwm_off();
     m_pwm_control->set_duty(DUTY_CYCLE_ACTIVE);
 
+    m_tone_control->pwm_off();
+    m_tone_control->set_duty(50);
+
     while(!terminate_flag)
     {
         temp_reading_t temp_reading;
@@ -34,12 +47,17 @@ void cryo_control::control_loop()
         if (temp_reading.temp <= m_temp_setting)
         {
             m_pwm_control->pwm_off();
+            if (is_cooling_active())
+                start_tone();
             set_cooling_active(false);
         }
         else if (m_power_enabled)
             m_pwm_control->pwm_on();
         else
             m_pwm_control->pwm_off();
+
+        if (m_tone_control->get_duty() && std::chrono::steady_clock::now() - m_tone_start > TONE_DURATION)
+            stop_tone();
 
         std::this_thread::sleep_for(std::chrono::milliseconds(10));
     }
@@ -89,7 +107,9 @@ void cryo_control::set_cooling_active(bool is_enabled)
     if (m_power_enabled)
         m_start_time = std::chrono::steady_clock::now();
     else
+    {
         m_stop_time = std::chrono::steady_clock::now();
+    }
 }
 
 bool cryo_control::is_cooling_active() const
@@ -103,4 +123,15 @@ duration_t cryo_control::get_active_duration() const
         return std::chrono::steady_clock::now() - m_start_time.load();
     else
         return m_stop_time.load() - m_start_time.load();
+}
+
+void cryo_control::start_tone()
+{
+    m_tone_start = std::chrono::steady_clock::now();
+    m_tone_control->pwm_on();
+}
+
+void cryo_control::stop_tone()
+{
+    m_tone_control->pwm_off();
 }
