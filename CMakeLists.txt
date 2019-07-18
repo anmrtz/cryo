@@ -10,9 +10,9 @@ find_library(pigpio REQUIRED)
 
 include_directories(include)
 
-add_executable(cryo main.cpp cryo_control.cpp control_ui.cpp console_ui.cpp adc_temp.cpp pwm_control.cpp server_ui.cpp)
-add_executable(test_adc_temp test_adc_temp.cpp adc_temp.cpp)
-add_executable(test_server test_server.cpp)
+add_executable(cryo src/main.cpp src/cryo_control.cpp src/control_ui.cpp src/console_ui.cpp src/adc_temp.cpp src/pwm_control.cpp src/server_ui.cpp)
+add_executable(test_adc_temp src/test_adc_temp.cpp src/adc_temp.cpp)
+add_executable(test_server src/test_server.cpp)
 
 target_link_libraries(cryo pigpio stdc++fs atomic pthread zmq)
 target_link_libraries(test_adc_temp pigpio atomic pthread)
