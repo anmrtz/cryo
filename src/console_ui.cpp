@@ -82,7 +82,6 @@ void console_ui::console_task()
 
     std::string line;
     std::string token;
-    duty_t set_duty;
     temp_t set_temp;
     while(true)
     {
