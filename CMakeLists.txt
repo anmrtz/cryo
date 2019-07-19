@@ -10,7 +10,7 @@ find_library(pigpio REQUIRED)
 
 include_directories(include)
 
-add_executable(cryo src/main.cpp src/cryo_control.cpp src/control_ui.cpp src/console_ui.cpp src/adc_temp.cpp src/pwm_control.cpp src/server_ui.cpp)
+add_executable(cryo src/main.cpp src/cryo_control.cpp src/control_ui.cpp src/console_ui.cpp src/adc_temp.cpp src/pwm_control.cpp src/server_ui.cpp src/pid_v1.cpp)
 add_executable(test_adc_temp test/test_adc_temp.cpp src/adc_temp.cpp)
 add_executable(test_server test/test_server.cpp)
 

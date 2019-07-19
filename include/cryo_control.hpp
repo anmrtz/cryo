@@ -31,6 +31,9 @@ class cryo_control
     void set_cooling_active(bool);
     bool is_cooling_active() const;
 
+    void set_pid_mode(bool);
+    bool is_pid_mode() const;
+
     duration_t get_active_duration() const;
 
     void control_loop(); // main temperature control loop
@@ -44,6 +47,8 @@ class cryo_control
 
     void start_tone();
     void stop_tone();
+
+    std::atomic_bool m_pid_mode{true};
 
     std::vector<std::weak_ptr<control_ui>> m_active_ifaces; // observers
     std::shared_ptr<pwm_control> m_pwm_control;
@@ -59,6 +64,6 @@ class cryo_control
     std::atomic<std::chrono::steady_clock::time_point> m_start_time{std::chrono::steady_clock::now()};
     std::atomic<std::chrono::steady_clock::time_point> m_stop_time{std::chrono::steady_clock::now()};
 
-    bool m_tone_running{false};
+    std::atomic_bool m_tone_triggered{false};
     std::chrono::steady_clock::time_point m_tone_start;
 };
