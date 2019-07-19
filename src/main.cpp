@@ -6,7 +6,6 @@
 #include "defs.hpp"
 #include "cryo_control.hpp"
 #include "console_ui.hpp"
-#include "adc_temp.hpp"
 #include "server_ui.hpp"
 
 std::atomic_bool terminate_flag{false}; // TODO: remove this
@@ -27,7 +26,6 @@ int main(int argc, char ** argv)
     sigaction(SIGINT, &sigIntHandler, nullptr);
 
     std::shared_ptr<cryo_control> cryo = std::make_shared<cryo_control>();
-    cryo->set_pid_mode(true);
 
     std::shared_ptr<console_ui> console = std::make_shared<console_ui>(cryo);
     cryo->register_ui_observer(console);

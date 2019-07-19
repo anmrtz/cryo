@@ -48,7 +48,7 @@ class cryo_control
     void start_tone();
     void stop_tone();
 
-    std::atomic_bool m_pid_mode{true};
+    std::atomic_bool m_pid_mode{false};
 
     std::vector<std::weak_ptr<control_ui>> m_active_ifaces; // observers
     std::shared_ptr<pwm_control> m_pwm_control;
