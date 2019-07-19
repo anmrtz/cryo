@@ -18,9 +18,10 @@ using freq_t = uint32_t; // frequency expressed in Hz
 
 using gpio_t = uint32_t;
 
-constexpr temp_t TEMP_SETTING_MIN{0};
+constexpr temp_t TEMP_SETTING_MIN{-5'000};
 constexpr temp_t TEMP_SETTING_MAX{20'000};
-constexpr temp_t INVALID_TEMP_READING{0};
+constexpr temp_t INVALID_TEMP_READING{std::numeric_limits<temp_t>::lowest()};
+static_assert(INVALID_TEMP_READING < TEMP_SETTING_MIN && TEMP_SETTING_MIN < TEMP_SETTING_MAX);
 
 constexpr duty_t DUTY_CYCLE_MIN{0};
 constexpr duty_t DUTY_CYCLE_MAX{100};

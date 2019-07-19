@@ -85,7 +85,7 @@ void console_ui::console_task()
 
     std::string line;
     std::string token;
-    temp_t set_temp;
+    float set_temp;
     while(true)
     {
         if (terminate_flag)
@@ -106,14 +106,14 @@ void console_ui::console_task()
         {
             try
             {
-                set_temp = std::stoi(tokens.at(1));
+                set_temp = std::stof(tokens.at(1));
             }
             catch (std::logic_error & e)
             {
                 std::cout << "String to unsigned conversion error: " << e.what() << '\n';
             }
 
-            if (get_cryo_ptr()->update_temp_setting(set_temp*1000))
+            if (get_cryo_ptr()->update_temp_setting((temp_t)(set_temp*1000)))
                 std::cout << "Setting cryo target temperature to " << set_temp << " degrees C\n";
             else
                 std::cout << "Failed to set cryo target temperature to " << set_temp << " degrees C\n";

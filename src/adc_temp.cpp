@@ -9,7 +9,7 @@
 
 #include <pigpio.h>
 
-static const std::map<float,int> THERMISTOR_LOOKUP
+static const std::map<float,temp_t> THERMISTOR_LOOKUP
 {
     {	157.2	,	-30	},
     {	148.1	,	-29	},
@@ -235,7 +235,7 @@ temp_t adc_temp::read_temp()
 
     const auto therm_it = THERMISTOR_LOOKUP.lower_bound(thermistor_value);
     if (therm_it == THERMISTOR_LOOKUP.end())
-        return {};
+        return INVALID_TEMP_READING;
 
     float temp_reading = therm_it->second;
     if (therm_it != --THERMISTOR_LOOKUP.end())
